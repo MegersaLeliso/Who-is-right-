@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Who's Right? — settle it with dice</title>
+    <meta
+      name="description"
+      content="Settle any argument with a provably fair roll of the dice. 2–4 players, best-of matches, roll-offs, live stats and 3D dice."
+    />
+    <meta name="theme-color" content="#232931" />
+    <meta property="og:title" content="Who's Right? — settle it with dice" />
+    <meta property="og:description" content="Settle any argument with a provably fair roll of the dice." />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='4' width='56' height='56' rx='14' fill='%234ECCA3'/%3E%3Cg fill='%23232931'%3E%3Ccircle cx='20' cy='20' r='6'/%3E%3Ccircle cx='32' cy='32' r='6'/%3E%3Ccircle cx='44' cy='44' r='6'/%3E%3C/g%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lobster&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      try {
+        var saved = JSON.parse(localStorage.getItem('whos-right:v1'));
+        if (saved && saved.settings && saved.settings.theme) {
+          document.documentElement.dataset.theme = saved.settings.theme;
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#roll-btn">Skip to the roll button</a>
+
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Who's Right? home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-name">Who's Right?</span>
+      </a>
+      <div class="topbar-actions">
+        <button id="sound-btn" class="icon-btn" type="button" aria-pressed="true" title="Sound (M)">
+          <span class="visually-hidden">Sound</span>
+          <svg class="icon icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M19 5a10 10 0 0 1 0 14" /></svg>
+          <svg class="icon icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z" /><path d="m22 9-6 6" /><path d="m16 9 6 6" /></svg>
+        </button>
+        <button id="theme-btn" class="icon-btn" type="button" title="Toggle light / dark theme (T)">
+          <span class="visually-hidden">Toggle theme</span>
+          <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+          <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+        </button>
+        <button id="settings-btn" class="icon-btn" type="button" title="Game settings">
+          <span class="visually-hidden">Game settings</span>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="stage" aria-labelledby="headline">
+        <label class="topic">
+          <span class="topic-label">The argument</span>
+          <input
+            id="topic-input"
+            type="text"
+            maxlength="80"
+            autocomplete="off"
+            placeholder="e.g. Who does the dishes tonight?"
+          />
+        </label>
+
+        <div class="status" aria-live="polite" aria-atomic="true">
+          <h1 id="headline" class="headline">Who's right?</h1>
+          <p id="subline" class="subline">Roll the dice to settle it.</p>
+        </div>
+
+        <div id="scoreboard" class="scoreboard"></div>
+
+        <div id="arena" class="arena"></div>
+
+        <div class="controls">
+          <button id="roll-btn" class="roll-btn" type="button">
+            <span class="roll-btn-label">Roll the dice</span>
+          </button>
+          <button id="new-btn" class="ghost-btn" type="button">New match</button>
+        </div>
+        <p class="hint" aria-hidden="true">
+          <kbd>Space</kbd> roll <span>·</span> <kbd>N</kbd> new match <span>·</span> <kbd>M</kbd> mute
+          <span>·</span> <kbd>T</kbd> theme
+        </p>
+      </section>
+
+      <aside class="panel" aria-label="Match details">
+        <div class="tabs" role="tablist" aria-label="Match details">
+          <button id="tab-history" class="tab" role="tab" type="button" aria-selected="true" aria-controls="panel-history">
+            History <span id="history-count" class="tab-count">0</span>
+          </button>
+          <button id="tab-stats" class="tab" role="tab" type="button" aria-selected="false" aria-controls="panel-stats" tabindex="-1">
+            Stats
+          </button>
+        </div>
+
+        <div id="panel-history" class="tab-panel" role="tabpanel" aria-labelledby="tab-history" tabindex="0">
+          <ol id="history-list" class="history"></ol>
+          <p id="history-empty" class="empty">No rolls yet. Your match history will appear here.</p>
+        </div>
+
+        <div id="panel-stats" class="tab-panel" role="tabpanel" aria-labelledby="tab-stats" tabindex="0" hidden>
+          <div id="stats-content"></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      Built by <a href="https://github.com/MegersaLeliso">Megersa Leliso</a> ·
+      <a href="https://github.com/MegersaLeliso/Who-is-right-">Source on GitHub</a>
+    </footer>
+
+    <!-- Settings -->
+    <dialog id="settings-dialog" class="dialog" aria-labelledby="settings-title">
+      <form method="dialog" class="dialog-body" id="settings-form">
+        <div class="dialog-head">
+          <h2 id="settings-title">Game settings</h2>
+          <button class="icon-btn" value="cancel" formnovalidate aria-label="Close settings">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <fieldset class="field">
+          <legend>Players</legend>
+          <div class="segmented">
+            <label><input type="radio" name="playerCount" value="2" /><span>2</span></label>
+            <label><input type="radio" name="playerCount" value="3" /><span>3</span></label>
+            <label><input type="radio" name="playerCount" value="4" /><span>4</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend>Dice per player</legend>
+          <div class="segmented">
+            <label><input type="radio" name="diceCount" value="1" /><span>1</span></label>
+            <label><input type="radio" name="diceCount" value="2" /><span>2</span></label>
+            <label><input type="radio" name="diceCount" value="3" /><span>3</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend>Match length</legend>
+          <div class="segmented segmented-wrap" id="mode-options"></div>
+        </fieldset>
+
+        <p class="dialog-note">Applying settings starts a new match. Player names are kept.</p>
+
+        <div class="dialog-actions">
+          <button class="ghost-btn" value="cancel" formnovalidate>Cancel</button>
+          <button class="primary-btn" value="apply">Start new match</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Match winner -->
+    <dialog id="champion-dialog" class="dialog champion" aria-labelledby="champion-title">
+      <div class="dialog-body">
+        <div class="trophy" aria-hidden="true">🏆</div>
+        <p id="champion-topic" class="champion-topic"></p>
+        <h2 id="champion-title" class="champion-title"></h2>
+        <p id="champion-score" class="champion-score"></p>
+        <div class="dialog-actions">
+          <button id="share-btn" class="ghost-btn" type="button">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8h16v-8M16 6l-4-4-4 4M12 2v14" /></svg>
+            Share result
+          </button>
+          <button id="rematch-btn" class="primary-btn" type="button" autofocus>Rematch</button>
+        </div>
+      </div>
+    </dialog>
+
+    <canvas id="confetti" class="confetti" aria-hidden="true" hidden></canvas>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/game.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
