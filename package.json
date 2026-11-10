@@ -1,0 +1,15 @@
+{
+  "name": "whos-right",
+  "version": "1.0.0",
+  "description": "Settle any argument with a provably fair roll of the dice.",
+  "private": true,
+  "license": "MIT",
+  "author": "Megersa Leliso",
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8000"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
